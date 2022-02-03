@@ -1,7 +1,10 @@
 const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
-// Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content
+/**
+ * reqd. data ->
+ * Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content, Category (Media Report, Site Report, Editorial)
+ */
 
 // Middleware
 async function getBlog(req,res,next){
@@ -34,7 +37,7 @@ router.get("/:id",getBlog, (req,res)=>{
   res.json(res.Blog);
 })
 
-// Get new
+// Post
 router.post("/",async(req,res)=>{
   const Blog = new blog({
     title: req.body.title,
@@ -42,7 +45,8 @@ router.post("/",async(req,res)=>{
     tags: req.body.tags,
     likes: 0,
     thumbnail: req.body.thumbnail,
-    content: req.body.content
+    content: req.body.content,
+    category: req.body.category
   })
   try{
     const newBlog = await Blog.save()
@@ -62,8 +66,6 @@ router.delete("/:id",  getBlog, async(req,res)=>{
     res.status(500).json({message: err.message})
   }
 })
-
-
 
 // Patch
 router.patch("/:id",getBlog,async(req,res)=>{
@@ -85,7 +87,10 @@ router.patch("/:id",getBlog,async(req,res)=>{
   
   if(req.body.content != null){
     res.Blog.content = req.body.content;
-  } 
+  }
+  if(req.body.category != null){
+    res.Blog.category = req.Blog.catergory;
+  }
   try{
     const newBlog = await res.Blog.save();
     res.json(newBlog);

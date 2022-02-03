@@ -10,20 +10,21 @@ app.use(express.json())
 const port = process.env.PORT;
 const dburl = process.env.DBURL;
 mongoose.connect(dburl);
-const db = mongoose.connection;
+db = mongoose.connection;
 
-db.on('error', (error)=>{
+db.on("error",(error)=>{
   console.error(error);
 })
 
-db.once('open',()=>{
-  console.log("Connected to database");
+db.once("open",()=>{
+  console.log(`Connected to DB @ ${dburl}`)
 })
-
 
 // Routes
 const blogRoute = require("./routes/blog");
 app.use("/blog",blogRoute)
+const authorRoute = require("./routes/author");
+app.use("/author",authorRoute)
 
 app.listen(port,()=>{
   console.log(`Listening on ${port}`);
