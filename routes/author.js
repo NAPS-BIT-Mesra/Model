@@ -1,4 +1,4 @@
-const express = require("express")
+const express = require("express");
 const router = express.Router()
 const authorschema = require("../models/author")
 const blog = require("../models/blog")
@@ -33,13 +33,13 @@ router.get("/",async(req,res)=>{
 })
 
 // Get One
-router.get("/:id",getAuthor,(req,res)=>{
+router.get("/id/:id",getAuthor,(req,res)=>{
   res.json(res.Author);
 })
 
 // Get author's blogs
-router.get("/:id/blogs",getAuthor,async(req,res)=>{
-  Blogs = await blog.find({author: res.Author.name});
+router.get("/id/:id/blogs",async(req,res)=>{
+  Blogs = await blog.findById(req.params.id);
   res.json(Blogs);
 })
 
@@ -60,7 +60,7 @@ router.post("/",async(req,res)=>{
 
 
 // Patch
-router.patch("/:id",getAuthor,async(req,res)=>{
+router.patch("/id/:id",getAuthor,async(req,res)=>{
   if(req.body.name != null){
     res.Author.name = req.body.name;
   }
@@ -86,7 +86,7 @@ router.patch("/:id",getAuthor,async(req,res)=>{
 })
 
 // Delete
-router.delete("/:id",getAuthor,async(req,res)=>{
+router.delete("/id/:id",getAuthor,async(req,res)=>{
   try{
     await res.Author.remove();
     res.json({message: "Removed Successfully"});
@@ -94,5 +94,17 @@ router.delete("/:id",getAuthor,async(req,res)=>{
     res.status(500).json({message: err.message});
   }
 })
+
+// Get by tag
+router.get("/tag", async(req,res)=>{
+  try{
+    const Authors = await authorschema.find({tags:req.body.tags});
+    res.json(Authors);
+  }catch(err){
+    res.status(500).json({message: err.message});
+  }
+})
+
+
 
 module.exports = router

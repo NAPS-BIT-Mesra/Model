@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
+const author = require("../models/author")
 /**
  * reqd. data ->
  * Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content, Category (Media Report, Site Report, Editorial)
@@ -22,6 +23,20 @@ async function getBlog(req,res,next){
   next();
 }
 
+async function getAuthor(req,res,next){
+  let Blog;
+  try{
+    Author = await author.findById(req.body.author);
+    if(Author == null){
+      return res.status(404).json({message: `No Author with the given id ${req.body.author}}`})
+    }
+  } catch (err){
+    return res.status(500).json({message: err.message})
+  }
+
+  res.Author = Author;
+  next();
+}
 // Get All
 router.get("/",async(req,res)=>{
   try{
@@ -33,12 +48,12 @@ router.get("/",async(req,res)=>{
 })
 
 // Get One
-router.get("/:id",getBlog, (req,res)=>{
+router.get("/id/:id",getBlog, (req,res)=>{
   res.json(res.Blog);
 })
 
 // Post
-router.post("/",async(req,res)=>{
+router.post("/",getAuthor,async(req,res)=>{
   const Blog = new blog({
     title: req.body.title,
     author: req.body.author,
@@ -50,15 +65,24 @@ router.post("/",async(req,res)=>{
   })
   try{
     const newBlog = await Blog.save()
+    req.body.tags.forEach(tag=>{
+      if(res.Author.tags.find((t)=>{
+        return t==tag;
+      })){
+        // Tag exists
+      }else{
+        res.Author.tags.push(tag);
+      }
+    })
+    res.Author.save();
     res.status(201).send(newBlog);
   }catch (err) {
     res.status(400).json({message: err.message})
   }
-
 })
 
 // Delete
-router.delete("/:id",  getBlog, async(req,res)=>{ 
+router.delete("/id/:id",  getBlog, async(req,res)=>{ 
   try{
     await res.Blog.remove();
     res.json({message: "Removed Succesfully"})
@@ -68,7 +92,7 @@ router.delete("/:id",  getBlog, async(req,res)=>{
 })
 
 // Patch
-router.patch("/:id",getBlog,async(req,res)=>{
+router.patch("/id/:id",getBlog,async(req,res)=>{
   if(req.body.title != null){
     res.Blog.title = req.body.title;
   }
@@ -94,6 +118,17 @@ router.patch("/:id",getBlog,async(req,res)=>{
   try{
     const newBlog = await res.Blog.save();
     res.json(newBlog);
+  }catch(err){
+    res.status(500).json({message: err.message});
+  }
+})
+
+// Get by tags
+
+router.get("/tag", async(req,res)=>{
+  try{
+    const Blogs = blog.find({tags: req.body.tags});
+    res.json(Blogs);
   }catch(err){
     res.status(500).json({message: err.message});
   }
