@@ -124,7 +124,6 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
 })
 
 // Get by tags
-
 router.get("/tag", async(req,res)=>{
   try{
     const Blogs = blog.find({tags: req.body.tags});
