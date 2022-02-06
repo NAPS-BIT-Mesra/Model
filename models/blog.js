@@ -1,7 +1,8 @@
 const mongoose = require("mongoose")
-
-// Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content
-
+/** 
+ * req. data->
+ * Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content, Category (Media Report, Site Report, Editorial)
+*/
 const blogSchema = new mongoose.Schema({
 
   title: {
@@ -30,6 +31,10 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   content: {
+    type: String,
+    required: true,
+  },
+  category: {
     type: String,
     required: true,
   }
