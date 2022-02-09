@@ -1,5 +1,3 @@
-const mongoose = require("mongoose")
-
 /**
  * A Mongoose schema for a blog post.
  * @param title - The title of the blog post.
@@ -16,7 +14,7 @@ const mongoose = require("mongoose")
  * @param likes - The number of likes for the blog post
  * @returns None
  */
-const blogSchema = new mongoose.Schema({
+const blogSchema = {
 
   title: {
     type: String,
@@ -51,7 +49,7 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true,
   }
-})
+}
 
 
-module.exports = mongoose.model('naps_blog', blogSchema)
+module.exports = blogSchema

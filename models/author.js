@@ -1,4 +1,3 @@
-const mongoose = require("mongoose")
 
 /**
  * The author schema for the database.
@@ -8,7 +7,7 @@ const mongoose = require("mongoose")
  * @param tags - The tags of the author's posts.
  * @returns None
  */
-const authorSchema = new mongoose.Schema({
+const authorSchema = {
 
   name: {
     type: String,
@@ -27,6 +26,6 @@ const authorSchema = new mongoose.Schema({
     required: false,
     default: []
   }
-})
+}
 
-module.exports = mongoose.model('naps_author',authorSchema)
+module.exports = authorSchema
