@@ -1,10 +1,10 @@
 # Todo
-+ Tags db
++ Tags db - Done
 + Author schema - Done
 + Name, Photo, Description, Tags(auto-generated) - Done
-+ Auto-update tags
++ Auto-update tags - Done
 + Get author's Blogs - Done
 + Query by author id - Done
-+ Query by tag
++ Query by tag - Done
 + + For Blogs
 + + For Author
