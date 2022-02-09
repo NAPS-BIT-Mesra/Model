@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
 const author = require("../models/author")
+const db = require("../server").get().db("naps_blog")
 
 /**
  * A middleware function that takes in a request and response object and returns a Blog object.
@@ -49,7 +50,7 @@ async function getAuthor(req,res,next){
 // Get All
 router.get("/",async(req,res)=>{
   try{
-    const blogs = await blog.find()
+    const blogs = await db.collection("naps_blogs").find({}).toArray();
     res.json(blogs)
   }catch (err){
     res.status(500).json({ message: err.message })
