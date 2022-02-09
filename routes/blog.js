@@ -2,12 +2,14 @@ const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
 const author = require("../models/author")
-/**
- * reqd. data ->
- * Data -> Title, Author, Created, Tags, Created, Likes, Thubnail, Content, Category (Media Report, Site Report, Editorial)
- */
 
-// Middleware
+/**
+ * A middleware function that takes in a request and response object and returns a Blog object.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function to call.
+ * @returns None
+ */
 async function getBlog(req,res,next){
   let Blog;
   try{
@@ -23,6 +25,13 @@ async function getBlog(req,res,next){
   next();
 }
 
+/**
+ * Finds the author with the given id and stores it in the request object.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function.
+ * @returns None
+ */
 async function getAuthor(req,res,next){
   let Blog;
   try{
@@ -47,12 +56,19 @@ router.get("/",async(req,res)=>{
   }
 })
 
-// Get One
+/**
+ * A function that returns a JSON object containing the blog data.
+ */
 router.get("/id/:id",getBlog, (req,res)=>{
   res.json(res.Blog);
 })
 
-// Post
+/**
+ * Takes in a new blog and adds it to the database.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.post("/",getAuthor,async(req,res)=>{
   const Blog = new blog({
     title: req.body.title,
@@ -81,7 +97,12 @@ router.post("/",getAuthor,async(req,res)=>{
   }
 })
 
-// Delete
+/**
+ * Removes all blog posts from the database.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.delete("/id/:id",  getBlog, async(req,res)=>{ 
   try{
     await res.Blog.remove();
@@ -91,7 +112,12 @@ router.delete("/id/:id",  getBlog, async(req,res)=>{
   }
 })
 
-// Patch
+/**
+ * Update a blog post with the given ID. 
+ * @param req - The request object. 
+ * @param res - The response object. 
+ * @returns None.
+ */
 router.patch("/id/:id",getBlog,async(req,res)=>{
   if(req.body.title != null){
     res.Blog.title = req.body.title;
@@ -123,7 +149,12 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
   }
 })
 
-// Get by tags
+/**
+ * Finds all blogs with the given tags.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.get("/tag", async(req,res)=>{
   try{
     const Blogs = blog.find({tags: req.body.tags});

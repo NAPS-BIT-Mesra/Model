@@ -5,7 +5,13 @@ const blog = require("../models/blog")
 // Data -> Name, Photo, Description, Tags (Auto Generated)
 // TODO 
 
-// Middleware
+/**
+ * A middleware function that takes in a request and response object and returns a promise that resolves to the author with the given ID.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function to call.
+ * @returns None
+ */
 async function getAuthor(req,res,next){
   let Author;
   try{
@@ -22,7 +28,12 @@ async function getAuthor(req,res,next){
 
 }
 
-// Get All
+/**
+ * Returns a list of all authors in the database.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.get("/",async(req,res)=>{
   try{
     const authors = await authorschema.find();
@@ -32,18 +43,33 @@ router.get("/",async(req,res)=>{
   }
 })
 
-// Get One
+/**
+ * A simple function that returns the author of the project.
+ * @param req - the request object.
+ * @param res - the response object.
+ * @returns None
+ */
 router.get("/id/:id",getAuthor,(req,res)=>{
   res.json(res.Author);
 })
 
-// Get author's blogs
+/**
+ * Returns the blog with the given id.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.get("/id/:id/blogs",async(req,res)=>{
   Blogs = await blog.findById(req.params.id);
   res.json(Blogs);
 })
 
-// Post
+/**
+ * Takes in a request and response object and creates a new author.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.post("/",async(req,res)=>{
   const Author = new authorschema({
     name: req.body.name,
@@ -59,7 +85,12 @@ router.post("/",async(req,res)=>{
 })
 
 
-// Patch
+/**
+ * Update the author with the given ID.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.patch("/id/:id",getAuthor,async(req,res)=>{
   if(req.body.name != null){
     res.Author.name = req.body.name;
@@ -85,7 +116,12 @@ router.patch("/id/:id",getAuthor,async(req,res)=>{
   }
 })
 
-// Delete
+/**
+ * Removes the Author from the database.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.delete("/id/:id",getAuthor,async(req,res)=>{
   try{
     await res.Author.remove();
@@ -95,7 +131,12 @@ router.delete("/id/:id",getAuthor,async(req,res)=>{
   }
 })
 
-// Get by tag
+/**
+ * Returns a list of authors that have the given tags.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.get("/tag", async(req,res)=>{
   try{
     const Authors = await authorschema.find({tags:req.body.tags});
