@@ -14,40 +14,16 @@
  * @param likes - The number of likes for the blog post
  * @returns None
  */
-const blogSchema = {
-
-  title: {
-    type: String,
-    required: true,
-  },
-  author: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: false,
-    default: Date.now(),
-  },
-  tags: {
-    type: Array,
-    required: true,
-  },
-  likes: {
-    type: Number,
-    required: true,
-  },
-  thumbnail: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
+class blogSchema {
+  constructor (title,author,tags,thumbnail,content,category){
+    this.title = title;
+    this.author = author;
+    this.tags = tags;
+    this.thumbnail = thumbnail;
+    this.content = content;
+    this.category=category;
+    this.likes = 0;
+    this.createdAt= Date.now();
   }
 }
 

@@ -2,20 +2,20 @@ const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
 const author = require("../models/author")
+const {ObjectId} = require("mongodb")
+const { tags } = require("../models/author")
 const db = require("../server").get().db("naps_blog")
 
 /**
  * A middleware function that takes in a request and response object and returns a Blog object.
- * @param req - The request object.
- * @param res - The response object.
  * @param next - The next middleware function to call.
  * @returns None
  */
 async function getBlog(req,res,next){
   let Blog;
   try{
-    Blog = await blog.findById(req.params.id);
-    if(Blog == null){
+    Blog = await db.collection("naps_blogs").find({_id: ObjectId(req.params.id)}).toArray();
+    if(Blog.length === 0){
       return res.status(404).json({message: `No Blog with the id ${req.params.id}`})
     }
   } catch (err){
@@ -25,29 +25,29 @@ async function getBlog(req,res,next){
   res.Blog = Blog;
   next();
 }
-
 /**
  * Finds the author with the given id and stores it in the request object.
- * @param req - The request object.
- * @param res - The response object.
  * @param next - The next middleware function.
  * @returns None
  */
 async function getAuthor(req,res,next){
   let Blog;
   try{
-    Author = await author.findById(req.body.author);
-    if(Author == null){
+    Author = await db.collection("naps_authors").find({_id: ObjectId(req.body.author)}).toArray();
+    if(Author.length === 0){
       return res.status(404).json({message: `No Author with the given id ${req.body.author}}`})
     }
   } catch (err){
     return res.status(500).json({message: err.message})
   }
 
-  res.Author = Author;
+  res.Author = Author[0];
   next();
 }
-// Get All
+/**
+ * Returns a list of all blogs in the database.
+ * @returns A list of all blogs in the database.
+ */
 router.get("/",async(req,res)=>{
   try{
     const blogs = await db.collection("naps_blogs").find({}).toArray();
@@ -58,50 +58,52 @@ router.get("/",async(req,res)=>{
 })
 
 /**
- * A function that returns a JSON object containing the blog data.
- */
-router.get("/id/:id",getBlog, (req,res)=>{
-  res.json(res.Blog);
-})
-
-/**
- * Takes in a new blog and adds it to the database.
- * @param req - The request object.
- * @param res - The response object.
+ * Takes in a new blog and adds it to the database and also updates the authors tags in the naps_authors database
+ * @param res.Author - The author who is posting the request
  * @returns None
  */
 router.post("/",getAuthor,async(req,res)=>{
-  const Blog = new blog({
-    title: req.body.title,
-    author: req.body.author,
-    tags: req.body.tags,
-    likes: 0,
-    thumbnail: req.body.thumbnail,
-    content: req.body.content,
-    category: req.body.category
-  })
+  const Blog = new blog(
+    req.body.title,
+    req.body.author,
+    req.body.tags,
+    req.body.thumbnail,
+    req.body.content,
+    req.body.category
+  )
   try{
-    const newBlog = await Blog.save()
+    const result = await db.collection("naps_blogs").insertOne(Blog);
+    const tagstoadd = []
     req.body.tags.forEach(tag=>{
       if(res.Author.tags.find((t)=>{
         return t==tag;
       })){
-        // Tag exists
+      // do nothing
       }else{
-        res.Author.tags.push(tag);
+        console.log(tag);
+        tagstoadd.push(tag)
       }
     })
-    res.Author.save();
-    res.status(201).send(newBlog);
+    if(tagstoadd.length>0){
+      await db.collection("naps_authors").updateOne({_id: res.Author._id},{$set: {"tags": [...res.Author.tags,...tagstoadd]}});
+    }
+    res.status(201).json({message: `Inserted blog with id ${result.insertedId}`})
   }catch (err) {
     res.status(400).json({message: err.message})
   }
 })
 
 /**
- * Removes all blog posts from the database.
- * @param req - The request object.
- * @param res - The response object.
+ * A function that returns a JSON object containing the blog data of the user whose id is provided.
+ * @param res.Blog - The blog object added by getBlog middleware
+ */
+router.get("/id/:id",getBlog, (req,res)=>{
+  res.json(res.Blog);
+})
+
+/**
+ * Removes the blog post with given id from the database.
+ * @param res.Blog - The blog object added by getBlog middleware
  * @returns None
  */
 router.delete("/id/:id",  getBlog, async(req,res)=>{ 
@@ -115,7 +117,6 @@ router.delete("/id/:id",  getBlog, async(req,res)=>{
 
 /**
  * Update a blog post with the given ID. 
- * @param req - The request object. 
  * @param res - The response object. 
  * @returns None.
  */
@@ -152,7 +153,6 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
 
 /**
  * Finds all blogs with the given tags.
- * @param req - The request object.
  * @param res - The response object.
  * @returns None
  */
