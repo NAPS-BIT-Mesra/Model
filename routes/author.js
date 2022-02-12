@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router()
-const authorschema = require("../models/author")
-const blog = require("../models/blog")
+const author = require("../models/author")
+const {ObjectId} = require("mongodb")
+const db = require("../server").get().db("naps_blog")
 // Data -> Name, Photo, Description, Tags (Auto Generated)
 // TODO 
 
@@ -15,28 +16,26 @@ const blog = require("../models/blog")
 async function getAuthor(req,res,next){
   let Author;
   try{
-    Author = await authorschema.findById(req.params.id);
-    if(Author == null){
+    Author = await db.collection("naps_authors").find({_id: ObjectId(req.params.id)}).toArray();
+    if(Author.length==0){
       return res.status(404).json({message: "No Author With Given ID"});
     }
   } catch (err){
     return res.status(500).json({message: err.message});
   }
 
-  res.Author = Author;
+  res.Author = Author[0];
   next();
 
 }
 
 /**
  * Returns a list of all authors in the database.
- * @param req - The request object.
- * @param res - The response object.
  * @returns None
  */
 router.get("/",async(req,res)=>{
   try{
-    const authors = await authorschema.find();
+    const authors = await db.collection("naps_authors").find({}).toArray();
     res.json(authors);
   }catch(err){
     return res.status(500).json({message: err.message});
@@ -45,8 +44,7 @@ router.get("/",async(req,res)=>{
 
 /**
  * A simple function that returns the author of the project.
- * @param req - the request object.
- * @param res - the response object.
+ * @param res.Author - Author object provided from getAuthor middleware
  * @returns None
  */
 router.get("/id/:id",getAuthor,(req,res)=>{
@@ -55,12 +53,10 @@ router.get("/id/:id",getAuthor,(req,res)=>{
 
 /**
  * Returns the blog with the given id.
- * @param req - The request object.
- * @param res - The response object.
  * @returns None
  */
 router.get("/id/:id/blogs",async(req,res)=>{
-  Blogs = await blog.findById(req.params.id);
+  Blogs = await db.collection("naps_blogs").find({author: req.params.id}).toArray();
   res.json(Blogs);
 })
 
@@ -71,15 +67,12 @@ router.get("/id/:id/blogs",async(req,res)=>{
  * @returns None
  */
 router.post("/",async(req,res)=>{
-  const Author = new authorschema({
-    name: req.body.name,
-    photo: req.body.photo,
-    desc: req.body.desc,
-  })
   try{
-    const newAuthor = await Author.save();
+    const Author = new author(req.body.name, req.body.photo, req.body.desc, req.body.tags);
+    const newAuthor = await db.collection("naps_authors").insertOne(Author);
     res.status(201).send(newAuthor);
   } catch (err){
+    // proper data not provided
     res.status(400).json({message: err.message});
   }
 })
@@ -92,28 +85,29 @@ router.post("/",async(req,res)=>{
  * @returns None
  */
 router.patch("/id/:id",getAuthor,async(req,res)=>{
-  if(req.body.name != null){
-    res.Author.name = req.body.name;
-  }
+  // TODO
+  // if(req.body.name != null){
+  //   res.Author.name = req.body.name;
+  // }
 
-  if(req.body.photo != null){
-    res.Author.photo = req.body.photo;
-  }
+  // if(req.body.photo != null){
+  //   res.Author.photo = req.body.photo;
+  // }
 
-  if(req.body.desc != null){
-    res.Author.desc = req.body.desc;
-  }
+  // if(req.body.desc != null){
+  //   res.Author.desc = req.body.desc;
+  // }
 
-  if(req.body.tags != null){
-    res.Author.tags = req.body.desc;
-  }
+  // if(req.body.tags != null){
+  //   res.Author.tags = req.body.desc;
+  // }
 
-  try{
-    const newAuthor = await res.Author.save();
-    res.json(newAuthor);
-  }catch(err){
-    res.status(500).json({message: err.message});
-  }
+  // try{
+  //   const newAuthor = await res.Author.save();
+  //   res.json(newAuthor);
+  // }catch(err){
+  //   res.status(500).json({message: err.message});
+  // }
 })
 
 /**
@@ -123,12 +117,12 @@ router.patch("/id/:id",getAuthor,async(req,res)=>{
  * @returns None
  */
 router.delete("/id/:id",getAuthor,async(req,res)=>{
-  try{
-    await res.Author.remove();
-    res.json({message: "Removed Successfully"});
-  }catch(err){
-    res.status(500).json({message: err.message});
-  }
+  // try{
+  //   await res.Author.remove();
+  //   res.json({message: "Removed Successfully"});
+  // }catch(err){
+  //   res.status(500).json({message: err.message});
+  // }
 })
 
 /**
@@ -138,12 +132,12 @@ router.delete("/id/:id",getAuthor,async(req,res)=>{
  * @returns None
  */
 router.get("/tag", async(req,res)=>{
-  try{
-    const Authors = await authorschema.find({tags:req.body.tags});
-    res.json(Authors);
-  }catch(err){
-    res.status(500).json({message: err.message});
-  }
+  // try{
+  //   const Authors = await authorschema.find({tags:req.body.tags});
+  //   res.json(Authors);
+  // }catch(err){
+  //   res.status(500).json({message: err.message});
+  // }
 })
 
 

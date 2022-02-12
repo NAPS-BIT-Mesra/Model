@@ -5,12 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "DBURL=mongodb://127.0.1:27017 PORT=3000 nodemon index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^14.3.2",
     "express": "^4.17.2",
     "mongodb": "^4.3.1"
   },

@@ -1,7 +1,5 @@
 // Imports
 const express = require("express");
-const dotenv = require("dotenv")
-dotenv.config()
 const server = require("./server")
 const {MongoClient} = require("mongodb")
 const app = express();
@@ -15,6 +13,7 @@ MongoClient.connect(dburl, function(err,database){
   if(err){
     throw err;
   }
+  // set a global variable in the server.js file to use this database object anywhere
   server.set(database);
 
   // Routes

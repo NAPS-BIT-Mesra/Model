@@ -1,9 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
-const author = require("../models/author")
 const {ObjectId} = require("mongodb")
-const { tags } = require("../models/author")
 const db = require("../server").get().db("naps_blog")
 
 /**
@@ -15,14 +13,14 @@ async function getBlog(req,res,next){
   let Blog;
   try{
     Blog = await db.collection("naps_blogs").find({_id: ObjectId(req.params.id)}).toArray();
-    if(Blog.length === 0){
+    if(Blog.length == 0){
       return res.status(404).json({message: `No Blog with the id ${req.params.id}`})
     }
   } catch (err){
     return res.status(500).json({message: err.message})
   }
 
-  res.Blog = Blog;
+  res.Blog = Blog[0];
   next();
 }
 /**
@@ -34,7 +32,7 @@ async function getAuthor(req,res,next){
   let Blog;
   try{
     Author = await db.collection("naps_authors").find({_id: ObjectId(req.body.author)}).toArray();
-    if(Author.length === 0){
+    if(Author.length == 0){
       return res.status(404).json({message: `No Author with the given id ${req.body.author}}`})
     }
   } catch (err){
@@ -63,15 +61,15 @@ router.get("/",async(req,res)=>{
  * @returns None
  */
 router.post("/",getAuthor,async(req,res)=>{
-  const Blog = new blog(
-    req.body.title,
-    req.body.author,
-    req.body.tags,
-    req.body.thumbnail,
-    req.body.content,
-    req.body.category
-  )
   try{
+      const Blog = new blog(
+      req.body.title,
+      req.body.author,
+      req.body.tags,
+      req.body.thumbnail,
+      req.body.content,
+      req.body.category
+    )
     const result = await db.collection("naps_blogs").insertOne(Blog);
     const tagstoadd = []
     req.body.tags.forEach(tag=>{
@@ -89,6 +87,7 @@ router.post("/",getAuthor,async(req,res)=>{
     }
     res.status(201).json({message: `Inserted blog with id ${result.insertedId}`})
   }catch (err) {
+    //user failed to provide complete information 
     res.status(400).json({message: err.message})
   }
 })
@@ -106,10 +105,10 @@ router.get("/id/:id",getBlog, (req,res)=>{
  * @param res.Blog - The blog object added by getBlog middleware
  * @returns None
  */
-router.delete("/id/:id",  getBlog, async(req,res)=>{ 
+router.delete("/id/:id", getBlog, async(req,res)=>{ 
   try{
-    await res.Blog.remove();
-    res.json({message: "Removed Succesfully"})
+    const delres = await db.collection("naps_blogs").deleteOne(res.Blog);
+    res.json(delres);
   }catch(err){
     res.status(500).json({message: err.message})
   }
@@ -121,30 +120,43 @@ router.delete("/id/:id",  getBlog, async(req,res)=>{
  * @returns None.
  */
 router.patch("/id/:id",getBlog,async(req,res)=>{
+  let toChange = {
+    title: res.Blog.title,
+    author: res.Blog.author,
+    tags: res.Blog.tags,
+    thumbnail: res.Blog.thumbnail,
+    content: res.Blog.content,
+    category: res.Blog.category,
+    likes: res.Blog.likes,
+    createdAt: res.Blog.createdAt,
+  };
+
   if(req.body.title != null){
-    res.Blog.title = req.body.title;
+    toChange.title = req.body.title;
+    console.log("title changed")
   }
 
   if(req.body.author != null){
-    res.Blog.author = req.body.author;
+    toChange.author = req.body.author;
   }
 
   if(req.body.tags != null){
-    res.Blog.tags = req.body.tags;
+    toChange.tags = req.body.tags;
   }
 
   if(req.body.thumbnail != null){
-    res.Blog.thumbnail = req.body.thumbnail;
+    toChange.thumbnail = req.body.thumbnail;
   }
   
   if(req.body.content != null){
-    res.Blog.content = req.body.content;
+    toChange.content = req.body.content;
   }
   if(req.body.category != null){
-    res.Blog.category = req.Blog.catergory;
+    toChange.category = req.Blog.catergory;
   }
   try{
-    const newBlog = await res.Blog.save();
+    console.log(toChange);
+    const newBlog = await db.collection("naps_blogs").updateOne(res.Blog,{$set: toChange});
     res.json(newBlog);
   }catch(err){
     res.status(500).json({message: err.message});
@@ -158,10 +170,14 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
  */
 router.get("/tag", async(req,res)=>{
   try{
-    const Blogs = blog.find({tags: req.body.tags});
-    res.json(Blogs);
+    const Blogs = await db.collection("naps_blogs").find({tags: {$all: req.body.tags}}).toArray();
+    if(Blogs.length>0){
+      res.json(Blogs);
+    }else{
+      res.status(404).json({message: "No Blogs With Given Tags"})
+    }
   }catch(err){
-    res.status(500).json({message: err.message});
+    res.status(500).json({message: err.message})
   }
 })
 
