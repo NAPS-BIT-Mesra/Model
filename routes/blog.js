@@ -78,7 +78,6 @@ router.post("/",getAuthor,async(req,res)=>{
       })){
       // do nothing
       }else{
-        console.log(tag);
         tagstoadd.push(tag)
       }
     })
@@ -133,7 +132,6 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
 
   if(req.body.title != null){
     toChange.title = req.body.title;
-    console.log("title changed")
   }
 
   if(req.body.author != null){
@@ -155,7 +153,6 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
     toChange.category = req.Blog.catergory;
   }
   try{
-    console.log(toChange);
     const newBlog = await db.collection("naps_blogs").updateOne(res.Blog,{$set: toChange});
     res.json(newBlog);
   }catch(err){

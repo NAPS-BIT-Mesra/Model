@@ -8,8 +8,6 @@ const db = require("../server").get().db("naps_blog")
 
 /**
  * A middleware function that takes in a request and response object and returns a promise that resolves to the author with the given ID.
- * @param req - The request object.
- * @param res - The response object.
  * @param next - The next middleware function to call.
  * @returns None
  */
@@ -53,6 +51,7 @@ router.get("/id/:id",getAuthor,(req,res)=>{
 
 /**
  * Returns the blog with the given id.
+ * @param res.Author - Author object provided from getAuthor middleware
  * @returns None
  */
 router.get("/id/:id/blogs",async(req,res)=>{
@@ -62,8 +61,6 @@ router.get("/id/:id/blogs",async(req,res)=>{
 
 /**
  * Takes in a request and response object and creates a new author.
- * @param req - The request object.
- * @param res - The response object.
  * @returns None
  */
 router.post("/",async(req,res)=>{
@@ -80,64 +77,62 @@ router.post("/",async(req,res)=>{
 
 /**
  * Update the author with the given ID.
- * @param req - The request object.
- * @param res - The response object.
+ * @param res.Author - Author object provided from getAuthor middleware
  * @returns None
  */
 router.patch("/id/:id",getAuthor,async(req,res)=>{
-  // TODO
-  // if(req.body.name != null){
-  //   res.Author.name = req.body.name;
-  // }
-
-  // if(req.body.photo != null){
-  //   res.Author.photo = req.body.photo;
-  // }
-
-  // if(req.body.desc != null){
-  //   res.Author.desc = req.body.desc;
-  // }
-
-  // if(req.body.tags != null){
-  //   res.Author.tags = req.body.desc;
-  // }
-
-  // try{
-  //   const newAuthor = await res.Author.save();
-  //   res.json(newAuthor);
-  // }catch(err){
-  //   res.status(500).json({message: err.message});
-  // }
+  try{
+    let toChange = new author(res.Author.name, res.Author.photo,res.Author.desc,res.Author.tags);
+    if(req.body.name != null){
+      toChange.name = req.body.name;
+    }
+    if(req.body.photo != null){
+      toChange.photo = req.body.photo;
+    }
+    if(req.body.desc != null){
+      toChange.desc = req.body.desc;
+    }
+    if(req.body.tags != null){
+      toChange.tags = req.body.tags;
+    }
+    const newBlog = await db.collection("naps_authors").updateOne(res.Author,{$set: toChange});
+    res.json(newBlog);
+  }catch(err){
+    res.status(500).json({message: err.message});
+  }
 })
 
 /**
  * Removes the Author from the database.
- * @param req - The request object.
- * @param res - The response object.
+ * @param res.Author - Author object provided from getAuthor middleware
  * @returns None
  */
 router.delete("/id/:id",getAuthor,async(req,res)=>{
-  // try{
-  //   await res.Author.remove();
-  //   res.json({message: "Removed Successfully"});
-  // }catch(err){
-  //   res.status(500).json({message: err.message});
-  // }
+  try{
+    const delres = await db.collection("naps_authors").deleteOne(res.Author);
+    res.json(delres);
+  }catch(err){
+    res.status(500).json({message: err.message})
+  }
 })
 
 /**
  * Returns a list of authors that have the given tags.
- * @param req - The request object.
- * @param res - The response object.
+ * Tags should be provided as an array in the request body
+ * @param res.Author - Author object provided from getAuthor middleware
  * @returns None
  */
 router.get("/tag", async(req,res)=>{
-  // try{
-  //   const Authors = await authorschema.find({tags:req.body.tags});
-  //   res.json(Authors);
-  // }catch(err){
-  //   res.status(500).json({message: err.message});
-  // }
+  try{
+    const Authors = await db.collection("naps_authors").find({tags: {$all: req.body.tags}}).toArray();
+    if(Authors.length>0){
+      res.json(Authors);
+    }else{
+      res.status(404).json({message: "No Blogs With Given Tags"})
+    }
+  }catch(err){
+    res.status(500).json({message: err.message});
+  }
 })
 
 
