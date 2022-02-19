@@ -3,6 +3,12 @@ const router = express.Router()
 const tags = require("../models/tags")
 
 
+/**
+ * Returns all the tags in the database.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.get("/", async(req,res)=>{
   try{
     const Tags = await tags.find()
@@ -13,6 +19,12 @@ router.get("/", async(req,res)=>{
 })
 
 
+/**
+ * Create a new tag.
+ * @param req - The request object.
+ * @param res - The response object.
+ * @returns None
+ */
 router.post("/",async(req,res)=>{
   const Tag = new tags({
     title: req.body.title,
