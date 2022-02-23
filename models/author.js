@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 
 /**
  * The author schema for the database.
@@ -7,13 +8,25 @@
  * @param tags - The tags of the author's posts.
  * @returns None
  */
-class authorSchema {
-  constructor(name, photo, desc, tags){
-    this.name = name;
-    this.photo = photo;
-    this.desc = desc;
-    this.tags = tags;
-  }
-}
+const authorSchema = new mongoose.Schema({
 
-module.exports = authorSchema
+  name: {
+    type: String,
+    required: true
+  },
+  photo: {
+    type: String,
+    required: true
+  },
+  desc: {
+    type: String,
+    required: true
+  },
+  tags: {
+    type: Array,
+    required: false,
+    default: []
+  }
+})
+
+module.exports = mongoose.model('naps_author',authorSchema)
