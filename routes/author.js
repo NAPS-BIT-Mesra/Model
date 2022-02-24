@@ -29,10 +29,8 @@ async function getAuthor(req,res,next){
 }
 
 /**
+ * Route - baseURL/author/
  * Returns a list of all authors in the database.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
  */
 router.get("/",async(req,res)=>{
   try{
@@ -44,31 +42,25 @@ router.get("/",async(req,res)=>{
 })
 
 /**
+ * Route - baseURL/author/id/:id/
  * A simple function that returns the author of the project.
- * @param req - the request object.
- * @param res - the response object.
- * @returns None
+ * @param res.Author - the author Object from the getAuthor middleware
  */
 router.get("/id/:id",getAuthor,(req,res)=>{
   res.json(res.Author);
 })
 
 /**
- * Returns the blog with the given id.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
+ * Returns the blogs by author with given ID.
+ * Route - baseURL/author/id/:id/blogs
  */
 router.get("/id/:id/blogs",async(req,res)=>{
-  Blogs = await blog.findById(req.params.id);
+  Blogs = await blog.find({author: req.params.id});
   res.json(Blogs);
 })
 
 /**
  * Takes in a request and response object and creates a new author.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
  */
 router.post("/",async(req,res)=>{
   const Author = new authorschema({
@@ -87,9 +79,8 @@ router.post("/",async(req,res)=>{
 
 /**
  * Update the author with the given ID.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
+ * Route - baseURL/author/id/:id
+ * @param res.Author - the author Object from the getAuthor middleware
  */
 router.patch("/id/:id",getAuthor,async(req,res)=>{
   if(req.body.name != null){
@@ -118,8 +109,8 @@ router.patch("/id/:id",getAuthor,async(req,res)=>{
 
 /**
  * Removes the Author from the database.
- * @param req - The request object.
- * @param res - The response object.
+ * Route - baseURL/author/id/:id
+ * @param res.Author - the author Object from the getAuthor middleware
  * @returns None
  */
 router.delete("/id/:id",getAuthor,async(req,res)=>{
@@ -132,14 +123,14 @@ router.delete("/id/:id",getAuthor,async(req,res)=>{
 })
 
 /**
+ * Route - baseURL/author/tag
  * Returns a list of authors that have the given tags.
- * @param req - The request object.
- * @param res - The response object.
+ * !! takes input from the requrest BODY
  * @returns None
  */
 router.get("/tag", async(req,res)=>{
   try{
-    const Authors = await authorschema.find({tags:req.body.tags});
+    const Authors = await authorschema.find({tags:{$all :req.body.tags}});
     res.json(Authors);
   }catch(err){
     res.status(500).json({message: err.message});
