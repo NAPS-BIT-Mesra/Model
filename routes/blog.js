@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const blog = require("../models/blog")
 const author = require("../models/author")
-
+const mongoose = require("mongoose")
 /**
  * A middleware function that takes in a request and response object and returns a Blog object.
  * @param req - The request object.
@@ -46,7 +46,10 @@ async function getAuthor(req,res,next){
   res.Author = Author;
   next();
 }
-// Get All
+/* 
+* Route - baseURL/blog/
+* Gets an array of all the blogs in the database
+*/
 router.get("/",async(req,res)=>{
   try{
     const blogs = await blog.find()
@@ -57,16 +60,18 @@ router.get("/",async(req,res)=>{
 })
 
 /**
+ * route - baseURL/blog/id/:id
  * A function that returns a JSON object containing the blog data.
+ * @param res.Blog - The blog object from getBlog middleware
  */
 router.get("/id/:id",getBlog, (req,res)=>{
   res.json(res.Blog);
 })
 
 /**
+ * route - baseURL/blog/
  * Takes in a new blog and adds it to the database.
- * @param req - The request object.
- * @param res - The response object.
+ * @param res.Author - The Author object from getAuthor middleware
  * @returns None
  */
 router.post("/",getAuthor,async(req,res)=>{
@@ -77,7 +82,9 @@ router.post("/",getAuthor,async(req,res)=>{
     likes: 0,
     thumbnail: req.body.thumbnail,
     content: req.body.content,
-    category: req.body.category
+    category: req.body.category,
+    summary: req.body.summary,
+    createdAt: Date.now()
   })
   try{
     const newBlog = await Blog.save()
@@ -98,10 +105,9 @@ router.post("/",getAuthor,async(req,res)=>{
 })
 
 /**
+ * route - baseURL/blog/id/:id
  * Removes all blog posts from the database.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
+ * @param res.Blog - The blog object from getBlog middleware
  */
 router.delete("/id/:id",  getBlog, async(req,res)=>{ 
   try{
@@ -113,10 +119,9 @@ router.delete("/id/:id",  getBlog, async(req,res)=>{
 })
 
 /**
+ * route - baseURL/blog/id/:id
  * Update a blog post with the given ID. 
- * @param req - The request object. 
- * @param res - The response object. 
- * @returns None.
+ * @param res.Blog - The blog object from getBlog middleware
  */
 router.patch("/id/:id",getBlog,async(req,res)=>{
   if(req.body.title != null){
@@ -150,15 +155,39 @@ router.patch("/id/:id",getBlog,async(req,res)=>{
 })
 
 /**
+ * route - baseURL/blog/tag
  * Finds all blogs with the given tags.
- * @param req - The request object.
- * @param res - The response object.
- * @returns None
  */
 router.get("/tag", async(req,res)=>{
   try{
-    const Blogs = blog.find({tags: req.body.tags});
+    const Blogs = blog.find({tags: {$all: req.body.tags}});
     res.json(Blogs);
+  }catch(err){
+    res.status(500).json({message: err.message});
+  }
+})
+
+/**
+ * route - baseURL/blog/new
+ * Finds the latest 10 Blogs and sends an array of their {
+ * Thumbnail, title, AuthorID, AuthorName, createdAt time
+ * }
+ */
+router.get("/new",async(req,res)=>{
+  try{
+    const Blogs = await blog.find().sort({createdAt: -1}).limit(10);
+    var ans = [];
+    for(const curBlog of Blogs){
+      const authorObj = await author.findById(mongoose.Types.ObjectId(curBlog.author));
+      ans.push({
+        title: curBlog.title,
+        author: curBlog.author,
+        authorName: authorObj.name,
+        createdAt: curBlog.createdAt,
+        thumbnail: curBlog.thumbnail,
+      });
+    };
+    res.json(ans);
   }catch(err){
     res.status(500).json({message: err.message});
   }

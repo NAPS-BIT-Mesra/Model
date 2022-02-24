@@ -28,11 +28,10 @@ const blogSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    required: false,
-    default: Date.now(),
+    required: true,
   },
   tags: {
-    type: Array,
+    type: [String],
     required: true,
   },
   likes: {
@@ -50,6 +49,10 @@ const blogSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
+  },
+  summary: {
+    type: String,
+    required: true
   }
 })
 
